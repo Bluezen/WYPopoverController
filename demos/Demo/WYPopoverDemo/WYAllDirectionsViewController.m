@@ -19,6 +19,8 @@
 - (IBAction)open:(id)sender;
 - (void)close:(id)sender;
 
+@property(nonatomic, strong) UIBarButtonItem * barButtonAction;
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////
@@ -35,6 +37,7 @@
 @synthesize bottomButton;
 @synthesize bottomRightButton;
 @synthesize dialogButton;
+@synthesize barButtonAction;
 
 - (void)viewDidLoad
 {
@@ -57,6 +60,33 @@
     [bottomLeftButton setBackgroundImage:normal forState:UIControlStateNormal]; [bottomLeftButton setBackgroundImage:highlighted forState:UIControlStateHighlighted];
     [bottomButton setBackgroundImage:normal forState:UIControlStateNormal]; [bottomButton setBackgroundImage:highlighted forState:UIControlStateHighlighted];
     [bottomRightButton setBackgroundImage:normal forState:UIControlStateNormal]; [bottomRightButton setBackgroundImage:highlighted forState:UIControlStateHighlighted];
+    
+    self.barButtonAction =
+    [[UIBarButtonItem alloc]
+     initWithBarButtonSystemItem:UIBarButtonSystemItemAction
+     target:self
+     action:@selector(actionButtonPressed:)];
+    [self setToolbarItems:@[self.barButtonAction]];
+    self.navigationController.toolbarHidden = NO;
+    
+}
+
+- (void)actionButtonPressed:(id)sender
+{
+    NSString *title = @"My title";
+    NSURL *shareUrl = [NSURL URLWithString:@"http://www.myurl.com"];
+    
+    NSArray *activityItems = @[title, shareUrl];
+    
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
+    activityViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    
+    [self presentViewController:activityViewController animated:YES completion:nil];
+    
+    if ([activityViewController respondsToSelector:@selector(popoverPresentationController)]) {
+        // We are on an iPad running at least iOS8, we must specify an anchor point
+        activityViewController.popoverPresentationController.barButtonItem = self.barButtonAction;
+    }
 }
 
 - (IBAction)open:(id)sender
@@ -84,8 +114,8 @@
     //
     
     [settingsPopoverController beginThemeUpdates];
-        settingsPopoverController.theme.arrowHeight = 13;
-        settingsPopoverController.theme.arrowBase = 25;
+    settingsPopoverController.theme.arrowHeight = 13;
+    settingsPopoverController.theme.arrowBase = 25;
     [settingsPopoverController endThemeUpdates];
 }
 
