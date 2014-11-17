@@ -229,7 +229,29 @@ static char const * const UINavigationControllerEmbedInPopoverTagKey = "UINaviga
         [self setContentSize:contentSize];
     }
     
-    [self sizzled_pushViewController:aViewController animated:aAnimated];
+    // TODO: Find why same viewController is pushed twice
+    @try {
+        
+        [self sizzled_pushViewController:aViewController animated:aAnimated];
+        
+    } @catch (NSException * ex) {
+        //“Pushing the same view controller instance more than once is not supported”
+        //NSInvalidArgumentException
+        NSLog(@"Exception: [%@]:%@",[ex  class], ex );
+        NSLog(@"ex.name:'%@'", ex.name);
+        NSLog(@"ex.reason:'%@'", ex.reason);
+        //Full error includes class pointer address so only care if it starts with this error
+        NSRange range = [ex.reason rangeOfString:@"Pushing the same view controller instance more than once is not supported"];
+        
+        if ([ex.name isEqualToString:@"NSInvalidArgumentException"] &&
+            range.location != NSNotFound) {
+            //view controller already exists in the stack - just pop back to it
+            [self popToViewController:aViewController animated:NO];
+        } else {
+            NSLog(@"ERROR:UNHANDLED EXCEPTION TYPE:%@", ex);
+        }
+    } @finally {
+    }
     
     if (self.isEmbedInPopover)
     {
